@@ -39,23 +39,26 @@
                         <input type="text" class="form-control" name="email" id="email" value="lisisi@126.com">
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="inputPassword3" class="col-sm-2 control-label">用户图标：</label>
                     <div class="col-sm-10">
-                        <img src="images/2.jpg" alt=""  class="user_pic">
-                        <input type="file" id="exampleInputFile" name = "userPic">
+                        <img src="images/2.jpg" alt="" class="user_pic"><br>
+                        <label for="exampleInputFile">
+                            <img src="./img/上传.jpg" alt="" style="width: 50px;">
+                        </label>
+                        <input type="file" id="exampleInputFile" name="userPic" style="display: none">
                     </div>
                 </div>
 
                 <div class="form-group">
-                        <label for="inputEmail3" class="col-sm-2 control-label">密码：</label>
-                        <div class="col-sm-4">
-                            <input type="password" class="form-control" id="password" name="password" value="12345678">
-                        </div>
+                    <label for="inputEmail3" class="col-sm-2 control-label">密码：</label>
+                    <div class="col-sm-4">
+                        <input type="password" class="form-control" id="password" name="password" value="12345678">
                     </div>
-               
-    
+                </div>
+
+
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
                         <button type="submit" class="btn btn-success edit">修改</button>
@@ -70,24 +73,24 @@
 
     <script>
         //入口函数
-        $(function(){
+        $(function () {
             // 需求 ：图片预览
             //给选择文件按钮设置 change 事件
-            $('#exampleInputFile').on('change',function(){
+            $('#exampleInputFile').on('change', function () {
                 //创建一个变量用来接收选中的文件
                 var imgIcon = this.files[0];
                 //获得选中文件的url
                 var url = URL.createObjectURL(imgIcon);
                 //将url地址给img 的src属性
-                $('.user_pic').attr('src',url);
+                $('.user_pic').attr('src', url);
             });
 
 
             //需求 ：页面一加载，就将用户的信息给展示出来
             //发送ajax请求
             $.ajax({
-                url : 'http://localhost:8080/admin/user/detail',
-                success : function(backData){
+                url: 'http://localhost:8080/admin/user/detail',
+                success: function (backData) {
                     console.log(backData);
                     // $('#username').val(backData.data.username);
                     // $('#nickname').val(backData.data.nickname);
@@ -95,36 +98,52 @@
                     // $('#password').val(backData.data.password);
 
                     //为了优化代码，我们可以使用循环对象
-                    for(var key in backData.data){
-                        $('#'+key).val(backData.data[key]);
+                    for (var key in backData.data) {
+                        $('#' + key).val(backData.data[key]);
                     }
-                    $('.user_pic').attr('src',backData.data.userPic);
+                    $('.user_pic').attr('src', backData.data.userPic);
                 }
             });
 
             //需求 ： 编辑用户信息
             //给修改按钮设置点击事件
-            $('button.edit').on('click',function(e){
-               e.preventDefault()//阻止默认跳转
-               //创建formData对象
-               var fd = new FormData($('form')[0]);
-               //发送ajax请求
-               $.ajax({
-                   type : 'post',
-                   url : 'http://localhost:8080/admin/user/edit',
-                   data : fd,
-                   contentType : false,
-                   processData : false,
-                   success : function(backData){
-                    // console.log(backData);
-                       if (backData.code == 200){
-                           //刷新父窗口页面
-                           parent.window.location.href = 'index.html'
-                       }
-                   
-                    
-                   }
-               });
+            $('button.edit').on('click', function (e) {
+                e.preventDefault()//阻止默认跳转
+                //创建formData对象
+                var fd = new FormData($('form')[0]);
+                //发送ajax请求
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/admin/user/edit',
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function (backData) {
+                        // console.log(backData);
+                        if (backData.code == 200) {
+                            //用户信息改变的方法有两种
+
+                               /* //1.刷新父窗口页面
+                               parent.window.location.href = 'index.html' */
+
+                            //2.发送ajax请求 重新渲染用户信息
+                            $.ajax({
+                                url: 'http://localhost:8080/admin/user/info',
+                                success: function (backData) {
+                                    console.log(backData);
+                                    if (backData.code == 200) {
+                                        //因为此标签是通过iframe 页面打开，下面的jq方法是父窗口的，要想使用就必须在jq前面加一个parent
+                                        parent.$('.user_info>span').html('欢迎&nbsp;&nbsp' + backData.data.nickname);
+                                        parent.$('.user_info>img').attr('src', backData.data.userPic);
+                                        parent.$('.user_center_link>img').attr('src', backData.data.userPic);
+                                    }
+                                }
+                            });
+                        }
+
+
+                    }
+                });
             });
 
         })
