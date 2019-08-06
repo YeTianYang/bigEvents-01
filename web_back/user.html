@@ -121,18 +121,21 @@
                     success: function (backData) {
                         // console.log(backData);
                         if (backData.code == 200) {
+                            alert('修改成功');
                             //用户信息改变的方法有两种
 
                                /* //1.刷新父窗口页面
                                parent.window.location.href = 'index.html' */
 
                             //2.发送ajax请求 重新渲染用户信息
+
                             $.ajax({
                                 url: 'http://localhost:8080/admin/user/info',
                                 success: function (backData) {
                                     console.log(backData);
                                     if (backData.code == 200) {
                                         //因为此标签是通过iframe 页面打开，下面的jq方法是父窗口的，要想使用就必须在jq前面加一个parent
+                                        
                                         parent.$('.user_info>span').html('欢迎&nbsp;&nbsp' + backData.data.nickname);
                                         parent.$('.user_info>img').attr('src', backData.data.userPic);
                                         parent.$('.user_center_link>img').attr('src', backData.data.userPic);
