@@ -97,7 +97,7 @@
                     // $('#email').val(backData.data.email);
                     // $('#password').val(backData.data.password);
 
-                    //为了优化代码，我们可以使用循环对象
+                    //为了优化代码，我们可以使用循环 遍历对象
                     for (var key in backData.data) {
                         $('#' + key).val(backData.data[key]);
                     }
