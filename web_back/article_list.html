@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
     <script src="js/jquery-1.12.4.min.js"></script>
+    <script src="./js/jquery.twbsPagination.js"></script>
 </head>
 
 <body>
@@ -30,11 +31,11 @@
                             <option>爱旅行</option>
                         </select>
                         <select id="selStatus" name="" class="form-control input-sm">
-                            <option>所有状态</option>
-                            <option value="drafted">草稿</option>
-                            <option value="published">已发布</option>
+                            <option value="">所有状态</option>
+                            <option value="草稿">草稿</option>
+                            <option value="已发布">已发布</option>
                         </select>
-                        <button id="btnSearch" class="btn btn-default btn-sm">筛选</button>
+                        <button id="btnSearch" class="btn btn-default btn-sm btn-search">筛选</button>
                     </form>
                 </div>
                 <div class="col-xs-6">
@@ -282,7 +283,7 @@
             <tr>    
                 <td>{{v.title}}</td>
                 <td>{{v.author}}</td>
-                <td>{{v.catename}}</td>
+                <td>{{v.category}}</td>
                 <td class="text-center">{{v.date}}</td>
                 <td class="text-center">{{v.state}}</td>
                 <td class="text-center">
@@ -292,9 +293,129 @@
             </tr>
         {{/each}}
     </script>
+    <!-- 创建另外一个模板 -->
+    <script id="cate_list" type="text/html">
+        <option value="">所有分类</option>
+        {{each data v}}
+        <option value = "{{v.id}}">{{v.name}}</option>
+        {{/each}}
+    </script>
+
 
 
     <script>
+        //入口函数
+        $(function () {
+            //一进入页面就将将文章分类渲染在选择框里。
+            $.ajax({
+                url: 'http://localhost:8080/admin/category/list',
+                success: function (backData) {
+                    // console.log(backData);
+                    // 调用核心方法、
+                    var resHtml = template('cate_list', backData);
+                    $('#selCategory').html(resHtml);
+                }
+            });
+
+
+            //点击筛选，将筛选后的文章显示出来
+            //给筛选设置点击事件
+            //因为参数要传递到其他函数，所以需要全局声明
+            var artCate;
+            var artState
+            var istrue = false; //声明一个变量，判断点击的是否为筛选 (运用开关思想)，
+            $('.btn-search').on('click', function (e) {
+                e.preventDefault();//阻止默认跳转
+                istrue = true;
+                artCate = $('#selCategory').val();
+                artState = $('#selStatus').val();
+                console.log(artCate, artState);
+
+                getData(1, artCate, artState);
+            })
+
+
+            /*  //分页插件
+             $('.pagination').twbsPagination({
+                 totalPages: 35,  //总页数
+                 visiblePages: 7,  //当前可见页数
+                 onPageClick: function (event, page) {
+                     console.log(event); //当前点击的事件
+                     console.log(page); //当前点击的页码
+                     getData(page,artCate,artState)
+                 }
+             }); */
+
+            //定义一个全局变量用来接收 请求成功后的总页码条数
+            var mytotalPages = 10;
+            //动态的根据实际页数，重绘总页数，当前页数
+            var $pagination = $('.pagination');
+            var defaultOpts = {
+                totalPages: mytotalPages,
+                visiblePages: 5,
+                onPageClick: function (event, page) {
+                    console.log(event); //当前点击的事件
+                    console.log(page); //当前点击的页码
+                    getData(page, artCate, artState);
+                }
+            };
+            $pagination.twbsPagination(defaultOpts);
+
+
+
+            //将获取文章封装成一个函数
+            function getData(myPage, artCate, artState) {
+                //发送ajax请求
+                $.ajax({
+                    url: 'http://localhost:8080/admin/article/query',
+                    data: {
+                        type: artCate,
+                        state: artState,
+                        page: myPage,
+                    },
+                    success: function (backData) {
+                        if (backData.code == 200) {
+                            // console.log(backData);
+                            //调用模板引擎核心方法
+                            var resHtml = template('temp_article', backData);
+                            $('tbody').html(resHtml);
+
+
+                            //获取总页码条数
+                            var totalPages = backData.data.totalPage;
+                            //只有当 当前的总页码条数 要做出改变时才会重新渲染 或者 istrue 的值为 true 的时候
+                            if (totalPages != mytotalPages || istrue == true) {
+                                //将获取的总页数 赋值 给mytotalPages
+                                mytotalPages = totalPages;
+                                //获取当前页
+                                var currentPage = $pagination.twbsPagination('getCurrentPage');
+
+
+                                $pagination.twbsPagination('destroy');
+                                //重新渲染页码条，会自动执行一次onPageClick事件
+                                $pagination.twbsPagination($.extend({}, defaultOpts, {
+                                    startPage: 1,//每次筛选后，起始页为第一页
+                                    totalPages: totalPages
+                                }));
+
+                                istrue = false;
+                                //点击筛选渲染完成，再重新 变为true;
+
+                            }
+
+
+
+                        }
+                    }
+                });
+            }
+            // 应为插件自带的会在第一页渲染，所以不用我们再去渲染
+            // //一进入页面就调用渲染
+            // getData();
+        })
+    </script>
+
+    <!--  <script>
         // 入口函数
         $(function () {
             //声明一个全局变量，用来记录所有的文章类别
@@ -336,8 +457,8 @@
                     } 
                 }
             });
-        })
-    </script>
+        }) 
+  </script> -->
 
 </body>
 
