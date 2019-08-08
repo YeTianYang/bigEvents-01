@@ -287,8 +287,8 @@
                 <td class="text-center">{{v.date}}</td>
                 <td class="text-center">{{v.state}}</td>
                 <td class="text-center">
-                    <a href="article_edit.html" class="btn btn-default btn-xs">编辑</a>
-                    <a href="javascript:deleteTr( 1005 );" class="btn btn-danger btn-xs">删除</a>
+                    <a href="article_edit.html?id={{v.id}}"  class="btn btn-default btn-xs">编辑</a>
+                    <a href="#" data-id = "{{v.id}}" class="btn btn-danger btn-xs">删除</a>
                 </td>
             </tr>
         {{/each}}
@@ -329,7 +329,7 @@
                 istrue = true;
                 artCate = $('#selCategory').val();
                 artState = $('#selStatus').val();
-                console.log(artCate, artState);
+                // console.log(artCate, artState);
 
                 getData(1, artCate, artState);
             })
@@ -354,8 +354,8 @@
                 totalPages: mytotalPages,
                 visiblePages: 5,
                 onPageClick: function (event, page) {
-                    console.log(event); //当前点击的事件
-                    console.log(page); //当前点击的页码
+                   /*  console.log(event); //当前点击的事件
+                    console.log(page); //当前点击的页码 */
                     getData(page, artCate, artState);
                 }
             };
