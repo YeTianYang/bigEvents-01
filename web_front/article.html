@@ -205,6 +205,55 @@
         <p>电话：0755-****888 粤ICP备*******8号</p>
     </div>
 
+    <script src="./js/jquery-1.12.4.min.js"></script>
+    <script src="./js/template-web.js"></script>
+
+    <script id="info" type= "text/html">
+        {{data.author}} 发布于 {{data.date}};&nbsp;&nbsp;&nbsp;分类: {{cateName}}&nbsp;&nbsp;&nbsp;阅读:
+                (98)&nbsp;&nbsp;&nbsp;评论: (0)
+    </script>
+    <script>
+        $(function () {
+            var id = window.location.search.split('=')[1];
+            console.log(id);
+
+
+            var cateArr = null;
+            // 发送ajax请求，获得所有文章分类
+            $.ajax({
+                url : 'http://localhost:8080/admin/category/list',
+                success : function(backData){
+                    // console.log(backData);
+                    cateArr = backData.data
+                }
+            });
+
+            //发送ajax请求
+            $.ajax({
+                url: 'http://localhost:8080/admin/article/search',
+                data: {
+                    id: id,
+                },
+                success: function (backData) {
+                    for(var i = 0 ; i < cateArr.length;i++){
+                        if(backData.data.categoryId == cateArr[i].id){
+                            backData.cateName = cateArr[i].name;
+                            break;
+                        }
+                    }
+                    // console.log(backData);
+                    if (backData.code === 200){
+                        $('.article_title').text(backData.data.title);
+                        $('.article_con').html(backData.data.content);
+                        //调用核心方法
+                        var resHtml = template('info',backData);
+                        $('.article_info').html(resHtml);
+                    }
+                    
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
